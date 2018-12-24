@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: buhman/chicken:rijndael
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: |
+            csc -s -O3 -d1 rijndael-impl.c stream-ctr.c rijndael.scm -j rijndael
+            csc -s -d0 rijndael.import.scm
+      - run:
+          name: test
+          command: |
+            csi tests/run.scm
