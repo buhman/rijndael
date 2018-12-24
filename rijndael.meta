@@ -1,0 +1,4 @@
+((synopsis "rijndael")
+ (author "Zachary Buhman")
+ (license "GPLv3")
+ (test-depends test))
