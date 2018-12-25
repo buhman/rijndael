@@ -3,14 +3,28 @@
         (chicken condition)
         (srfi-4))
 
-(define (generate-zero-key key-bits)
-  (let ((vec (make-u8vector (/ key-bits 8) 0)))
+(define (generate-zero-key len)
+  (let ((vec (make-u8vector len 0)))
     vec))
 
-(define (generate-random-key key-bits)
-  (let* ((len (/ key-bits 8))
-         (buf (make-blob len)))
+(define (generate-random-key len)
+  (let* ((buf (make-blob len)))
     (blob->u8vector/shared (random-bytes buf len))))
+
+(define +max-rounds+ 14)
+(define +max-schedule-len+ (* 4 (+ +max-rounds+ 1)))
+
+(define (key->schedule key)
+  (let* ((key-bits (* 8 (u8vector-length key)))
+         (schedule (make-u32vector +max-schedule-len+))
+         (rounds (foreign-rijndael-key-schedule-encrypt! schedule key key-bits)))
+    (values schedule rounds)))
+
+(define (chunk-cipher! key nonce ctr buf-in buf-out)
+  (let-values (((schedule rounds) (key->schedule key)))
+    (let* ((len (u8vector-length buf-in))
+           (write-len (foreign-chunk-cipher! schedule rounds nonce ctr buf-in buf-out len)))
+      (values buf-out write-len ctr))))
 
 (define (stream-cipher key nonce ctr in-fd out-fd)
   (let* ((key-bits (* 8 (u8vector-length key)))

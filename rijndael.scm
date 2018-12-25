@@ -9,6 +9,7 @@
      ;; api
      generate-zero-key
      generate-random-key
+     chunk-cipher!
      stream-cipher)
 
   (import scheme (chicken base) (chicken foreign)
