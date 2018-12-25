@@ -84,7 +84,7 @@ stream_encrypt(const uint8_t * cipher_key,
                uint64_t * ctr,
                int in_fd, int out_fd)
 {
-  ssize_t len = 0, ret;
+  ssize_t len = 0, rret, wret;
   size_t offset = 0, clen;
   uint8_t rbuf[CHUNK_SIZE];
   uint8_t wbuf[CHUNK_SIZE];
@@ -96,27 +96,27 @@ stream_encrypt(const uint8_t * cipher_key,
                                          key_bits);
 
   while (true) {
-    ret = read(in_fd, rbuf + offset, CHUNK_SIZE - offset);
-    if (ret < 0) {
-      len = ret;
+    rret = read(in_fd, rbuf + offset, CHUNK_SIZE - offset);
+    if (rret < 0) {
+      len = rret;
       goto exit;
     }
 
-    if (ret == 0) { /* eof */
+    if (rret == 0) { /* eof */
       break;
     }
 
     clen = chunk_encrypt(schedule, rounds,
-                         nonce, ctr, rbuf, wbuf, ret);
+                         nonce, ctr, rbuf, wbuf, rret);
 
-    ret = write(out_fd, wbuf, clen);
-    if (ret < 0) {
-      len = ret;
+    wret = write(out_fd, wbuf, clen);
+    if (wret < 0) {
+      len = wret;
       goto exit;
     }
 
+    offset = rret - clen;
     memcpy(rbuf, rbuf + clen, offset);
-    offset = clen - ret;
     len += clen;
   }
 

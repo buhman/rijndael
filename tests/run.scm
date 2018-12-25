@@ -19,3 +19,7 @@
 (test-group
  "chunk"
  (include "tests/test-chunk.scm"))
+
+(test-group
+ "stream"
+ (include "tests/test-stream.scm"))

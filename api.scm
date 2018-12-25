@@ -1,5 +1,6 @@
 (import (chicken blob)
         (chicken random)
+        (chicken condition)
         (srfi-4))
 
 (define (generate-zero-key key-bits)
@@ -10,3 +11,11 @@
   (let* ((len (/ key-bits 8))
          (buf (make-blob len)))
     (blob->u8vector/shared (random-bytes buf len))))
+
+(define (stream-cipher key nonce ctr in-fd out-fd)
+  (let* ((key-bits (* 8 (u8vector-length key)))
+         (len (foreign-stream-cipher key key-bits nonce ctr in-fd out-fd)))
+    (unless (< 0 len)
+      (signal (condition '(exn location stream-cipher)
+                         `(ret ,len))))
+    len))
