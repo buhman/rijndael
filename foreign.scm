@@ -1,5 +1,5 @@
-(foreign-declare "#include \"rijndael-impl.c\"")
-(foreign-declare "#include \"stream-ctr.c\"")
+#> #include "rijndael-impl.c" <#
+#> #include "stream-ctr.c" <#
 
 (define foreign-rijndael-key-schedule-encrypt!
   (foreign-lambda int "rijndael_key_schedule_encrypt"
@@ -23,4 +23,4 @@
 
 (define foreign-stream-cipher
   (foreign-lambda integer64 "stream_encrypt"
-    u8vector integer u64vector u64vector integer integer))
+    u8vector integer u64vector u64vector integer integer u32vector))

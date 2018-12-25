@@ -1,5 +1,7 @@
 (import (chicken file)
         (chicken file posix)
+        (chicken blob)
+        (chicken io)
         rijndael)
 
 (include "tests/vectors.scm")
@@ -34,6 +36,22 @@
    (lambda (in-fd out-fd)
      (stream-cipher key nonce ctr in-fd out-fd))))
 
+;; large vectors
+
+(define string->u8vector
+  (o blob->u8vector string->blob))
+
+(define (vector-from-file path)
+  (with-input-from-file path
+    (lambda ()
+      (string->u8vector (read-string)))))
+
+(define +seq-6144-pt+
+  (vector-from-file "tests/seq-6144-pt"))
+
+(define +seq-6144-ct+
+  (vector-from-file "tests/seq-6144-ct"))
+
 ;; tests
 
 (test-group
@@ -47,11 +65,24 @@
    (test-stream-cipher +zeros-key+ +zeros-nonce+ (+zeros-ctr+) +zeros-ct+)))
 
 (test-group
- "partial block"
+ "partial block/chunk"
  (test "36-byte encrypt"
    (subu8vector +f6-ct+ 0 36)
    (test-stream-cipher +f6-key+ +fx-nonce+ (+fx-ctr+) (subu8vector +f6-pt+ 0 36)))
 
  (test "36-byte decrypt"
    (subu8vector +f6-pt+ 0 36)
-   (test-stream-cipher +f6-key+ +fx-nonce+ (+fx-ctr+) (subu8vector +f6-ct+ 0 36))))
+   (test-stream-cipher +f6-key+ +fx-nonce+ (+fx-ctr+) (subu8vector +f6-ct+ 0 36)))
+
+ (test "6144-byte encrypt"
+   +seq-6144-ct+
+   (test-stream-cipher +zeros-key+ +zeros-nonce+ (+zeros-ctr+) +seq-6144-pt+))
+
+ (test "6144-byte decrypt"
+   +seq-6144-pt+
+   (test-stream-cipher +zeros-key+ +zeros-nonce+ (+zeros-ctr+) +seq-6144-ct+)))
+
+(test-group
+ "error handling"
+ (test-error "bad fd"
+   (stream-cipher +zeros-key+ +zeros-nonce+ (+zeros-ctr+) -1 -1)))

@@ -21,4 +21,5 @@ stream_encrypt(const uint8_t * cipher_key,
 							 int key_bits,
 							 const uint64_t * nonce,
                uint64_t * ctr,
-							 int in_fd, int out_fd);
+							 int in_fd, int out_fd,
+               int * errorp);

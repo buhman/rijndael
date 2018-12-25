@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <errno.h>
 
 #include "rijndael-impl.h"
 #include "stream-ctr.h"
@@ -82,7 +82,8 @@ stream_encrypt(const uint8_t * cipher_key,
                int key_bits,
                const uint64_t * nonce,
                uint64_t * ctr,
-               int in_fd, int out_fd)
+               int in_fd, int out_fd,
+               int * errorp)
 {
   ssize_t len = 0, rret, wret;
   size_t offset = 0, clen;
@@ -98,8 +99,7 @@ stream_encrypt(const uint8_t * cipher_key,
   while (true) {
     rret = read(in_fd, rbuf + offset, CHUNK_SIZE - offset);
     if (rret < 0) {
-      len = rret;
-      goto exit;
+      goto error;
     }
 
     if (rret == 0) { /* eof */
@@ -111,8 +111,7 @@ stream_encrypt(const uint8_t * cipher_key,
 
     wret = write(out_fd, wbuf, clen);
     if (wret < 0) {
-      len = wret;
-      goto exit;
+      goto error;
     }
 
     offset = rret - clen;
@@ -135,4 +134,10 @@ stream_encrypt(const uint8_t * cipher_key,
 
  exit:
   return len;
+
+ error:
+  if (errorp != NULL) {
+    *errorp = errno;
+  }
+  return -1;
 }
