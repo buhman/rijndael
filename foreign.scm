@@ -1,5 +1,5 @@
-(foreign-declare "#include \"rijndael-impl.h\"")
-(foreign-declare "#include \"stream-ctr.h\"")
+(foreign-declare "#include \"rijndael-impl.c\"")
+(foreign-declare "#include \"stream-ctr.c\"")
 
 (define foreign-rijndael-key-schedule-encrypt!
   (foreign-lambda int "rijndael_key_schedule_encrypt"

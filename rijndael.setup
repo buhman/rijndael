@@ -1,7 +1,0 @@
-(compile -s -O3 -d1 rijndael-impl.c stream-ctr.c rijndael.scm -j rijndael)
-(compile -s -d0 rijndael.import.scm)
-
-(install-extension
- 'rijndael
- '("rijndael.so" "rijndael.import.so")
- '((version "0.1.0")))

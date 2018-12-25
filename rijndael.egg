@@ -1,0 +1,7 @@
+((synopsis "fast AES implementation")
+ (author "Zachary Buhman")
+ (category cryptography)
+ (test-dependencies test)
+ (components
+  (extension rijndael
+             (modules rijndael))))

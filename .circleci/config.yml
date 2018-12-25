@@ -8,8 +8,7 @@ jobs:
       - run:
           name: build
           command: |
-            csc -s -O3 -d1 rijndael-impl.c stream-ctr.c rijndael.scm -j rijndael
-            csc -s -d0 rijndael.import.scm
+            chicken-install -n
       - run:
           name: test
           command: |

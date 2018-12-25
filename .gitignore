@@ -3,3 +3,7 @@
 rijndael.c
 *.import.*
 *.so
+*.o
+*.link
+*.build.sh
+*.install.sh
