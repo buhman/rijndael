@@ -29,15 +29,15 @@ swap_endian(uint64_t value,
 static inline void
 block_encrypt(const uint32_t * schedule,
               int rounds,
+              const uint64_t * nonce,
+              uint64_t * ctr,
               const uint8_t * rbuf,
-              uint8_t * wbuf,
-              uint64_t * nonce,
-              uint64_t ctr)
+              uint8_t * wbuf)
 {
   uint128_t seed, pad;
 
   /* big endian */
-  seed = (((uint128_t)ctr) << 64) | *nonce;
+  seed = (((uint128_t)*ctr) << 64) | *nonce;
 
   /* CTR mode uses a psuedorandom pad in both directions */
   rijndael_encrypt(schedule, rounds,
@@ -50,11 +50,11 @@ block_encrypt(const uint32_t * schedule,
 size_t
 chunk_encrypt(const uint32_t * schedule,
               int rounds,
+              const uint64_t * nonce,
+              uint64_t * ctr,
               const uint8_t * rbuf,
               uint8_t * wbuf,
-              size_t len,
-              uint64_t * nonce,
-              uint64_t * ctr)
+              size_t len)
 {
   size_t offset = 0;
   uint64_t new_ctr;
@@ -62,9 +62,10 @@ chunk_encrypt(const uint32_t * schedule,
   while (offset + BLOCK_SIZE <= len) {
     block_encrypt(schedule,
                   rounds,
+                  nonce,
+                  ctr,
                   (rbuf + offset),
-                  (wbuf + offset),
-                  nonce, *ctr);
+                  (wbuf + offset));
 
     offset += BLOCK_SIZE;
 
@@ -79,20 +80,20 @@ chunk_encrypt(const uint32_t * schedule,
 ssize_t
 stream_encrypt(const uint8_t * cipher_key,
                int key_bits,
-               uint64_t * nonce,
+               const uint64_t * nonce,
+               uint64_t * ctr,
                int in_fd, int out_fd)
 {
   ssize_t len = 0, ret;
   size_t offset = 0, clen;
   uint8_t rbuf[CHUNK_SIZE];
   uint8_t wbuf[CHUNK_SIZE];
-  uint64_t ctr = 0;
   int rounds;
   uint32_t schedule[MAXSCH];
 
   rounds = rijndael_key_schedule_encrypt(schedule,
-                                             cipher_key,
-                                             key_bits);
+                                         cipher_key,
+                                         key_bits);
 
   while (true) {
     ret = read(in_fd, rbuf + offset, CHUNK_SIZE - offset);
@@ -106,7 +107,7 @@ stream_encrypt(const uint8_t * cipher_key,
     }
 
     clen = chunk_encrypt(schedule, rounds,
-                             rbuf, wbuf, ret, nonce, &ctr);
+                         nonce, ctr, rbuf, wbuf, ret);
 
     ret = write(out_fd, wbuf, clen);
     if (ret < 0) {
@@ -124,8 +125,8 @@ stream_encrypt(const uint8_t * cipher_key,
     memset(rbuf + offset, 0, BLOCK_SIZE - offset);
 
     block_encrypt(schedule, rounds,
-                      rbuf, wbuf,
-                      nonce, ctr);
+                  nonce, ctr,
+                  rbuf, wbuf);
 
     write(out_fd, wbuf, offset);
 

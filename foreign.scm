@@ -19,8 +19,8 @@
 
 (define foreign-chunk-cipher!
   (foreign-lambda unsigned-integer64 "chunk_encrypt"
-    u32vector integer u8vector u8vector unsigned-integer64 u64vector u64vector))
+    u32vector integer u64vector u64vector u8vector u8vector unsigned-integer64))
 
-(define foreign-stream-cipher!
+(define foreign-stream-cipher
   (foreign-lambda integer64 "stream_encrypt"
-    u8vector integer u64vector integer integer))
+    u8vector integer u64vector u64vector integer integer))

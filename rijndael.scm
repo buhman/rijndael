@@ -5,10 +5,11 @@
      foreign-rijndael-encrypt!
      foreign-rijndael-decrypt!
      foreign-chunk-cipher!
-     foreign-stream-cipher!
+     foreign-stream-cipher
      ;; api
      generate-zero-key
-     generate-random-key)
+     generate-random-key
+     stream-cipher)
 
   (import scheme (chicken base) (chicken foreign)
           srfi-4)
