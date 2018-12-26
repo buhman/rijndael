@@ -12,4 +12,4 @@ jobs:
       - run:
           name: test
           command: |
-            csi tests/run.scm
+            csi -s tests/run.scm
